@@ -11,17 +11,17 @@ int main(int argc, char *argv[])
 }*/
 #include <png.h>
 #include <unistd.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include  <cstdio>
-#include <stdarg.h>
+#include <cstdarg>
 #include <iostream>
 #define OPEN_FILE 100
 #define PNG_DEBUG 3
 #include <cstring>
 using namespace std;
 
+// error in reading
 
-//str 32
 struct Png{
     int width, height;
     png_byte color_type;
@@ -35,7 +35,84 @@ struct Png{
 
 void read_png_file(char *file_name, struct Png *image);
 void write_png_file(char *file_name, struct Png *image);
-void process_file_RGB(struct Png *image);
+void negativ_RGB(struct Png *image);
+
+void print_rectangle(struct Png *image,
+                     int lh_x,int lh_y,
+                     int rl_x, int rl_y,
+                     bool fill=false,string color="white",
+                     int thickness=5, string f_color ="black"){
+    //work with RGB
+    //switch color
+    //если за выход!!
+
+    int x1=lh_x;
+    int y1=lh_y;
+
+    int x2=rl_x;
+    int y2=lh_y;
+
+    int x3=rl_x;
+    int y3=rl_y;
+
+    int x4=lh_x;
+    int y4=rl_y;
+// border
+    for (int y=y1;y<y1+thickness;y++) {
+        png_byte *row = image->row_pointers[y];
+        for(int x = x1;x<x2;x++){
+            png_byte *ptr = &(row[x * 3]);
+            ptr[0]=255;
+            ptr[1]=255;
+            ptr[2]=255;
+        }
+    }
+
+    for (int y=y2;y<=y3;y++) {
+        png_byte *row = image->row_pointers[y];
+        for (int x=x2;x>x2-thickness;x--) {
+            png_byte *ptr = &(row[x * 3]);
+            ptr[0]=255;
+            ptr[1]=255;
+            ptr[2]=255;
+        }
+    }
+
+    for (int y=y3;y>y3-thickness;y--) {
+        png_byte *row = image->row_pointers[y];
+        for(int x = x1;x<x2;x++){
+            png_byte *ptr = &(row[x * 3]);
+            ptr[0]=255;
+            ptr[1]=255;
+            ptr[2]=255;
+        }
+    }
+
+    for (int y=y4;y>y1;y--) {
+        png_byte *row = image->row_pointers[y];
+        for (int x=x4;x<x4+thickness;x++) {
+            png_byte *ptr = &(row[x * 3]);
+            ptr[0]=255;
+            ptr[1]=255;
+            ptr[2]=255;
+        }
+    }
+
+    //fill
+    if(fill==true){
+        for (int y=y1+thickness;y<=y3-thickness;y++) {
+            png_byte *row = image->row_pointers[y];
+            for(int x = x1+thickness;x<=x3-thickness;x++){
+                png_byte *ptr = &(row[x * 3]);
+                ptr[0]=0;
+                ptr[1]=0;
+                ptr[2]=0;
+            }
+        }
+    }
+
+
+}
 
 int main(int argc, char **argv) {
     /*if (argc != 2){
@@ -44,10 +121,16 @@ int main(int argc, char **argv) {
     }*/
 
     struct Png image={};
-    char sorce[]="/home/kot/qt_project/img/8k.png";
-    char dest[]="/home/kot/qt_project/img/neg_puc.png";
+    char sorce[]="/home/kot/PNG_CW/img/deny.png";
+    char dest[]="/home/kot/PNG_CW/img/neg.png";
     read_png_file(sorce, &image);
-    process_file_RGB(&image);
+    //negativ_RGB(&image);
+    int x1,y1,x2,y2;
+    x1=50;
+    y1=75;
+    x2=690;
+    y2=1000;
+    print_rectangle(&image,x1,y1,x2,y2);
     write_png_file(dest, &image);
 
     return 0;
@@ -236,39 +319,9 @@ void write_png_file(char *file_name, struct Png *image) {
     fclose(fp);
 }
 
-void print_rectangle(struct Png *image,
-                     int lh_x,int lh_y,
-                     int rl_x, int rl_y,
-                     int thickness,string color,
-                     bool fill, string f_color ="black" ){
-    //work with RGB
-    //switch color
-    //если за выход!!
-
-    int x1=lh_x;
-    int y1=lh_y;
-
-    int x2=rl_x;
-    int y2=lh_y;
-
-    int x3=rl_x;
-    int y3=rl_y;
-
-    int x4=lh_x;
-    int y4=rl_y;
-
-    png_byte *row = image->row_pointers[y1];
-    for(int i = x1;i<x2;i++){
-        png_byte *ptr = &(row[i * 3]);
-        ptr[0]=0;
-        ptr[1]=0;
-        ptr[2]=0;
-    }
 
 
-}
-
-void process_file_RGB(struct Png *image) {
+void negativ_RGB(struct Png *image) {
     int x,y;
 
     if (png_get_color_type(image->png_ptr, image->info_ptr) != PNG_COLOR_TYPE_RGB){
@@ -281,15 +334,11 @@ void process_file_RGB(struct Png *image) {
         png_byte *row = image->row_pointers[y];
         for (x = 0; x < image->width; x++) {
             png_byte *ptr = &(row[x*3]);
-            //printf("Pixel at position [ %d - %d ] has RGBA values: %d - %d - %d \n",
-            //       x, y, ptr[0], ptr[1], ptr[2]);
-
-            /* set red value to 0 and green value to the blue one */
             ptr[0] = 255-ptr[0];
             ptr[1] = 255-ptr[1];
             ptr[2] = 255 - ptr[2];
         }
-        printf("curren succes is %d% \n",(100*y/image->height)%100);
+        printf("curren succes is %d\% \n",(100*y/image->height)%100);
     }
 }
 
