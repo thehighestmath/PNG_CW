@@ -15,9 +15,11 @@ int main(int argc, char *argv[])
 #include  <cstdio>
 #include <cstdarg>
 #include <iostream>
+#include <cstring>
 #define OPEN_FILE 100
 #define PNG_DEBUG 3
 #include <cstring>
+#define PNG_colors 3
 using namespace std;
 
 // error in reading
@@ -30,7 +32,7 @@ struct Png{
     png_structp png_ptr;
     png_infop info_ptr;
     int number_of_passes;
-    png_bytep *row_pointers;
+    png_byte **row_pointers;
 };
 
 void read_png_file(char *file_name, struct Png *image);
@@ -41,78 +43,16 @@ void print_rectangle(struct Png *image,
                      int lh_x,int lh_y,
                      int rl_x, int rl_y,
                      bool fill=false,string color="white",
-                     int thickness=5, string f_color ="black"){
-    //work with RGB
-    //switch color
-    //если за выход!!
+                     int thickness=5, string f_color ="black");
 
-    int x1=lh_x;
-    int y1=lh_y;
+void division(struct Png *image, int N, int M,
+              int thickness = 1, string color = "white");
 
-    int x2=rl_x;
-    int y2=lh_y;
+void rotate(struct Png *image,
+            int lh_x,int lh_y,
+            int rl_x, int rl_y,
+            int angle=90);
 
-    int x3=rl_x;
-    int y3=rl_y;
-
-    int x4=lh_x;
-    int y4=rl_y;
-// border
-    for (int y=y1;y<y1+thickness;y++) {
-        png_byte *row = image->row_pointers[y];
-        for(int x = x1;x<x2;x++){
-            png_byte *ptr = &(row[x * 3]);
-            ptr[0]=255;
-            ptr[1]=255;
-            ptr[2]=255;
-        }
-    }
-
-    for (int y=y2;y<=y3;y++) {
-        png_byte *row = image->row_pointers[y];
-        for (int x=x2;x>x2-thickness;x--) {
-            png_byte *ptr = &(row[x * 3]);
-            ptr[0]=255;
-            ptr[1]=255;
-            ptr[2]=255;
-        }
-    }
-
-    for (int y=y3;y>y3-thickness;y--) {
-        png_byte *row = image->row_pointers[y];
-        for(int x = x1;x<x2;x++){
-            png_byte *ptr = &(row[x * 3]);
-            ptr[0]=255;
-            ptr[1]=255;
-            ptr[2]=255;
-        }
-    }
-
-    for (int y=y4;y>y1;y--) {
-        png_byte *row = image->row_pointers[y];
-        for (int x=x4;x<x4+thickness;x++) {
-            png_byte *ptr = &(row[x * 3]);
-            ptr[0]=255;
-            ptr[1]=255;
-            ptr[2]=255;
-        }
-    }
-
-    //fill
-    if(fill==true){
-        for (int y=y1+thickness;y<=y3-thickness;y++) {
-            png_byte *row = image->row_pointers[y];
-            for(int x = x1+thickness;x<=x3-thickness;x++){
-                png_byte *ptr = &(row[x * 3]);
-                ptr[0]=0;
-                ptr[1]=0;
-                ptr[2]=0;
-            }
-        }
-    }
-
-
-}
 
 int main(int argc, char **argv) {
     /*if (argc != 2){
@@ -124,15 +64,23 @@ int main(int argc, char **argv) {
     char sorce[]="/home/kot/PNG_CW/img/deny.png";
     char dest[]="/home/kot/PNG_CW/img/neg.png";
     read_png_file(sorce, &image);
-    //negativ_RGB(&image);
+    if(image.color_type==6) {cout <<"RGBA. BYE\n"; return 0;}
+    png_byte *r=&image.row_pointers[20][20*3];
+    png_byte *f=&(*(*(image.row_pointers+20)+20*3));
+    //printf("%d,%d,%d\n", sizeof(&image.row_pointers[20][20*3]), sizeof(image.row_pointers[20][20*3]), sizeof(r));
+    //printf("%d\n",*(&image.row_pointers[20][20*3]+2));
+    printf("%d %d \n",r[0],f[0]);
+    negativ_RGB(&image);
     int x1,y1,x2,y2;
     x1=50;
     y1=75;
     x2=690;
     y2=1000;
-    print_rectangle(&image,x1,y1,x2,y2);
+    //print_rectangle(&image,x1,y1,x2,y2);
+    //division(&image,20,30,1);
+    rotate(&image,0,0,image.height,image.height);
     write_png_file(dest, &image);
-
+    cout<<"ok\n";
     return 0;
 }
 
@@ -200,17 +148,17 @@ void read_png_file(char *file_name, struct Png *image) {
     printf("color_type = %d\n",image->color_type);
 
     // png формат может содержать 16 бит на канал, но нам нужно только 8, поэтому сужаем канал
-      if (image->bit_depth == 16) png_set_strip_16(image->png_ptr);
-      // преобразуем файл если он содержит палитру в нормальный RGB
-      if (image->color_type == PNG_COLOR_TYPE_PALETTE && image->bit_depth <= 8) png_set_palette_to_rgb(image->png_ptr);
-          //image->color_type=2;   // RGB with palette->RGB
-      // если в грэйскейле меньше бит на канал чем 8, то конвертим к нормальному 8-битному
-      if (image->color_type == PNG_COLOR_TYPE_GRAY && image->bit_depth < 8) png_set_expand_gray_1_2_4_to_8(image->png_ptr);
-      // и добавляем полный альфа-канал
-      if (png_get_valid(image->png_ptr, image->info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(image->png_ptr);
-      //grey to rgb
-      if (image->color_type == PNG_COLOR_TYPE_GRAY || image->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-          png_set_gray_to_rgb(image->png_ptr);
+    if (image->bit_depth == 16) png_set_strip_16(image->png_ptr);
+    // преобразуем файл если он содержит палитру в нормальный RGB
+    if (image->color_type == PNG_COLOR_TYPE_PALETTE && image->bit_depth <= 8) png_set_palette_to_rgb(image->png_ptr);
+    //image->color_type=2;   // RGB with palette->RGB
+    // если в грэйскейле меньше бит на канал чем 8, то конвертим к нормальному 8-битному
+    if (image->color_type == PNG_COLOR_TYPE_GRAY && image->bit_depth < 8) png_set_expand_gray_1_2_4_to_8(image->png_ptr);
+    // и добавляем полный альфа-канал
+    if (png_get_valid(image->png_ptr, image->info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(image->png_ptr);
+    //grey to rgb
+    if (image->color_type == PNG_COLOR_TYPE_GRAY || image->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+        png_set_gray_to_rgb(image->png_ptr);
 
 
 
@@ -232,7 +180,7 @@ void read_png_file(char *file_name, struct Png *image) {
         exit(1);
     }
 
-    image->row_pointers = (png_bytep *) malloc(sizeof(png_bytep) * image->height);
+    image->row_pointers = (png_byte **) malloc(sizeof(png_byte *) * image->height);
     for (y = 0; y < image->height; y++)
         //image->row_pointers[y] = (png_byte *) malloc(png_get_rowbytes(image->png_ptr, image->info_ptr));
         // т.к. изображение перевернутое, то указатели идут снизу вверх
@@ -313,13 +261,133 @@ void write_png_file(char *file_name, struct Png *image) {
 
     /* cleanup heap allocation */
     for (y = 0; y < image->height; y++)
+        //printf("%d --- ",y);
+        cout<<""; // спросить у ЧАЙКИ
         free(image->row_pointers[y]);
     free(image->row_pointers);
 
     fclose(fp);
 }
 
+void print_rectangle(struct Png *image,
+                     int lh_x,int lh_y,
+                     int rl_x, int rl_y,
+                     bool fill,string color,
+                     int thickness, string f_color){
+    //work with RGB
+    //switch color
+    //если за выход!!
 
+    int x1=lh_x;
+    int y1=lh_y;
+
+    int x2=rl_x;
+    int y2=lh_y;
+
+    int x3=rl_x;
+    int y3=rl_y;
+
+    int x4=lh_x;
+    int y4=rl_y;
+// border
+    for (int y=y1;y<y1+thickness;y++) {
+        //png_byte *row = image->row_pointers[y];
+        for(int x = x1;x<x2;x++){
+            //png_byte *ptr = &(row[x * 3]);
+            png_byte *ptr = &image->row_pointers[y][x*3];
+            ptr[0]=255;
+            ptr[1]=255;
+            ptr[2]=255;
+        }
+    }
+
+    for (int y=y2;y<=y3;y++) {
+        //png_byte *row = image->row_pointers[y];
+        for (int x=x2;x>x2-thickness;x--) {
+            //png_byte *ptr = &(row[x * 3]);
+            png_byte *ptr = &image->row_pointers[y][x*3];
+            ptr[0]=255;
+            ptr[1]=255;
+            ptr[2]=255;
+        }
+    }
+
+    for (int y=y3;y>y3-thickness;y--) {
+        //png_byte *row = image->row_pointers[y];
+        for(int x = x1;x<x2;x++){
+            //png_byte *ptr = &(row[x * 3]);
+            png_byte *ptr = &image->row_pointers[y][x*3];
+            ptr[0]=255;
+            ptr[1]=255;
+            ptr[2]=255;
+        }
+    }
+
+    for (int y=y4;y>y1;y--) {
+        //png_byte *row = image->row_pointers[y];
+        for (int x=x4;x<x4+thickness;x++) {
+            //png_byte *ptr = &(row[x * 3]);
+            png_byte *ptr = &image->row_pointers[y][x*3];
+            ptr[0]=255;
+            ptr[1]=255;
+            ptr[2]=255;
+        }
+    }
+
+    //fill
+    if(fill==true){
+        for (int y=y1+thickness;y<=y3-thickness;y++) {
+            //png_byte *row = image->row_pointers[y];
+            for(int x = x1+thickness;x<=x3-thickness;x++){
+                //png_byte *ptr = &(row[x * 3]);
+                png_byte *ptr = &image->row_pointers[y][x*3];
+                ptr[0]=0;
+                ptr[1]=0;
+                ptr[2]=0;
+            }
+        }
+    }
+
+
+}
+
+void division(struct Png *image, int N, int M,
+              int thickness,string color){
+
+    // исключения по толщине
+
+    int space_y=(image->height-(N-1)*thickness)/N;
+    int space_x=(image->width-(M-1)*thickness)/M;
+    int comst=0;
+    for (int y=space_y;y<image->height-space_y;y=y+space_y) {
+        comst=y;
+        for(y;y<comst+thickness;y++){
+            //png_byte *row = image->row_pointers[y];
+            for(int x=0;x<image->width;x++){
+                //png_byte *ptr = &(row[x * 3]);
+                png_byte *ptr = &image->row_pointers[y][x*3];
+                ptr[0]=255;
+                ptr[1]=255;
+                ptr[2]=255;
+            }
+            printf("%d\n",y);
+        }
+    }
+    for(int y=0;y<image->height;y++){
+        //png_byte *row = image->row_pointers[y];
+        for (int x=space_x;x<image->width-space_x;x=x+space_x) {
+            comst=x;
+            for (x;x<comst+thickness;x++) {
+                //png_byte *ptr = &(row[x * 3]);
+                png_byte *ptr = &image->row_pointers[y][x*3];
+                ptr[0]=255;
+                ptr[1]=255;
+                ptr[2]=255;
+            }
+        }
+    }
+
+}
 
 void negativ_RGB(struct Png *image) {
     int x,y;
@@ -330,7 +398,7 @@ void negativ_RGB(struct Png *image) {
         exit(1);
     }
 
-    for (y = 0; y < image->height; y++) {
+    /*for (y = 0; y < image->height; y++) {
         png_byte *row = image->row_pointers[y];
         for (x = 0; x < image->width; x++) {
             png_byte *ptr = &(row[x*3]);
@@ -339,6 +407,113 @@ void negativ_RGB(struct Png *image) {
             ptr[2] = 255 - ptr[2];
         }
         printf("curren succes is %d\% \n",(100*y/image->height)%100);
+    }*/
+    for (y = 0; y < image->height; y++) {
+        //png_byte *row = image->row_pointers[y];
+        for (x = 0; x < image->width; x++) {
+            png_byte *ptr = &image->row_pointers[y][x*3];
+            ptr[0] = 255 - ptr[0];
+            ptr[1] = 255 - ptr[1];
+            ptr[2] = 255 - ptr[2];
+        }
+        printf("curren succes is %d\% , %d\n", (100 * y / image->height) % 100);
+    }
+}
+
+void rotate(struct Png *image,
+            int lh_x,int lh_y,
+            int rl_x, int rl_y,
+            int angle){
+    // error(r<l)
+    int size=rl_x-lh_x;
+    int layer_count=size/2;
+    for(int i=0;i<angle/90;i++){
+        for (int layer=0;layer<layer_count;layer++) {
+            int first = layer;
+            int last = size-first-1;
+            for (int element=first;element<last;element++) {
+                int offset =element-first;
+                /*
+                png_byte top= image->row_pointers[first][element*3];
+                png_byte right_side = image->row_pointers[element][last*3];
+                png_byte bottom =image->row_pointers[last][(last-offset)*3];
+                png_byte left_side =image->row_pointers[last-offset][first*3];
+                image->row_pointers[first][element*3] =left_side;
+                image->row_pointers[element][last*3] = top;
+                image->row_pointers[last][(last-offset)*3] = right_side;
+                image->row_pointers[last-offset][first*3] =bottom;
+                 */
+                png_byte top[PNG_colors];
+                png_byte right_side[PNG_colors];
+                png_byte bottom[PNG_colors];
+                png_byte left_side[PNG_colors];
+                top[0]=*(&image->row_pointers[first][element*3]);
+                top[1]=*(&image->row_pointers[first][element*3]+1);
+                top[2]=*(&image->row_pointers[first][element*3]+2);
+                right_side[0]=*(&image->row_pointers[element][last*3]);
+                right_side[1]=*(&image->row_pointers[element][last*3]+1);
+                right_side[2]=*(&image->row_pointers[element][last*3]+2);
+                bottom[0]=*(&image->row_pointers[last][(last-offset)*3]);
+                bottom[1]=*(&image->row_pointers[last][(last-offset)*3]+1);
+                bottom[2]=*(&image->row_pointers[last][(last-offset)*3]+2);
+                left_side[0]=*(&image->row_pointers[last-offset][first*3]);
+                left_side[1]=*(&image->row_pointers[last-offset][first*3]+1);
+                left_side[2]=*(&image->row_pointers[last-offset][first*3]+2);
+
+
+                *(&image->row_pointers[first][element*3])=left_side[0];
+                *(&image->row_pointers[first][element*3]+1)=left_side[1];
+                *(&image->row_pointers[first][element*3]+2)=left_side[2];
+
+                *(&image->row_pointers[element][last*3])=top[0];
+                *(&image->row_pointers[element][last*3]+1)=top[1];
+                *(&image->row_pointers[element][last*3]+2)=top[2];
+
+                *(&image->row_pointers[last][(last-offset)*3])=right_side[0];
+                *(&image->row_pointers[last][(last-offset)*3]+1)=right_side[1];
+                *(&image->row_pointers[last][(last-offset)*3]+2)=right_side[2];
+
+                *(&image->row_pointers[last-offset][first*3])=bottom[0];
+                *(&image->row_pointers[last-offset][first*3]+1)=bottom[1];
+                *(&image->row_pointers[last-offset][first*3]+2)=bottom[2];
+
+
+
+
+             /*
+
+            png_byte *top= &image->row_pointers[first][element];
+            png_byte *right_side = &image->row_pointers[element][last];
+            png_byte *bottom = &image->row_pointers[last][(last-offset)];
+            png_byte *left_side = &image->row_pointers[last-offset][first];
+            image->row_pointers[first][element]=*left_side;
+            image->row_pointers[element][last] = *top;
+            image->row_pointers[last][(last-offset)] = *right_side;
+            image->row_pointers[last-offset][first] = *bottom;
+            */
+             /*
+            png_byte* top=0;
+            png_byte* right_side=0;
+            png_byte* bottom=0;
+            png_byte* left_side=0;
+            png_byte p=(*(*(image->row_pointers+first)+element*3));
+            memmove(top, &(*(*(image->row_pointers+first)+element*3)), 3);
+            //memmove(top, &image->row_pointers[first][element*3], sizeof(3*image->row_pointers[first][element*3]));
+            memmove(right_side, &image->row_pointers[element][last*3], sizeof(3*image->row_pointers[element][last*3]));
+            memmove(bottom, &image->row_pointers[last][(last-offset)*3], sizeof(3*image->row_pointers[last][(last-offset)*3]));
+            memmove(left_side, &image->row_pointers[last-offset][first*3], sizeof(3*image->row_pointers[last-offset][first*3]));
+
+            memmove(&image->row_pointers[first][element*3],left_side, sizeof(3*image->row_pointers[first][element*3]));
+            memmove(&image->row_pointers[element][last*3],top, sizeof(3*image->row_pointers[element][last*3]));
+            memmove(&image->row_pointers[last][(last-offset)*3],right_side, sizeof(3*image->row_pointers[last][(last-offset)*3]));
+            memmove(&image->row_pointers[last-offset][first*3],bottom, sizeof(3*image->row_pointers[last-offset][first*3]));
+            */
+
+
+
+
+            }
+        }
     }
 }
 
