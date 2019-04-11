@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
     }*/
 
     struct Png image={};
-    char sorce[]="/home/kot/PNG_CW/img/green.png";
+    char sorce[]="/home/kot/PNG_CW/img/deeeen.png";
     char dest[]="/home/kot/PNG_CW/img/neg.txt.png";
     read_png_file(sorce, &image);
     if(image.color_type==6) {cout <<"RGBA. BYE\n"; return 0;}
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     //printf("%d,%d,%d\n", sizeof(&image.row_pointers[20][20*3]), sizeof(image.row_pointers[20][20*3]), sizeof(r));
     //printf("%d\n",*(&image.row_pointers[20][20*3]+2));
     printf("%d %d \n",r[0],f[0]);
-    //negativ_RGB(&image,0,0,image.width,image.height);
+    negativ_RGB(&image,0,0,image.width,image.height);
     int x1,y1,x2,y2;
     x1=50;
     y1=75;
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
     y2=1000;
     //print_rectangle(&image,x1,y1,x2,y2);
     //division(&image,20,30,1);
-    rotate(&image,0,0,image.height,image.height);
+    //rotate(&image,0,0,image.height,image.height);
     write_png_file(dest, &image);
     cout<<"ok\n";
     return 0;

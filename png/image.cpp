@@ -1,6 +1,6 @@
 #include "image.h"
 
-int Image::read_png_file(const char *file_name){
+int Image::open_png_file(const char *file_name){
     png_uint_32 x,y;
     // 8 is the maximum size that can be checked
     png_byte header[8]= {0};
@@ -77,8 +77,8 @@ int Image::read_png_file(const char *file_name){
 
     png_read_update_info(Bitmap.png_ptr, Bitmap.info_ptr);
 
-    Bitmap.width = png_get_image_width(Bitmap.png_ptr, Bitmap.info_ptr);
-    Bitmap.height = png_get_image_height(Bitmap.png_ptr, Bitmap.info_ptr);
+    //Bitmap.width = png_get_image_width(Bitmap.png_ptr, Bitmap.info_ptr);
+    //Bitmap.height = png_get_image_height(Bitmap.png_ptr, Bitmap.info_ptr);
     Bitmap.color_type = png_get_color_type(Bitmap.png_ptr, Bitmap.info_ptr);
     Bitmap.bit_depth = png_get_bit_depth(Bitmap.png_ptr, Bitmap.info_ptr);
     Bitmap.number_of_passes = png_set_interlace_handling(Bitmap.png_ptr);
@@ -94,11 +94,11 @@ int Image::read_png_file(const char *file_name){
     }
 
     Bitmap.row_pointers = static_cast <png_byte**> (malloc(sizeof(png_byte *) * Bitmap.height));
-    for (y = 0; y < Bitmap.height; y++)
+    for (y = 0; y < Bitmap.height; y++){
       //image->row_pointers[y] = (png_byte *) malloc(png_get_rowbytes(image->png_ptr, image->info_ptr));
       // т.к. изображение перевернутое, то указатели идут снизу вверх
-    Bitmap.row_pointers[Bitmap.height-y-1] = static_cast<png_byte*> (malloc(png_get_rowbytes(Bitmap.png_ptr, Bitmap.info_ptr)));
-
+        Bitmap.row_pointers[Bitmap.height-y-1] = static_cast<png_byte*> (malloc(png_get_rowbytes(Bitmap.png_ptr, Bitmap.info_ptr)));
+    }
     png_read_image(Bitmap.png_ptr, Bitmap.row_pointers);
 
     Bitmap.Pixels = static_cast<Pixel_t**>(malloc(sizeof(Pixel_t *) * Bitmap.height));
@@ -107,11 +107,11 @@ int Image::read_png_file(const char *file_name){
         }
         for(y = 0; y < Bitmap.height; y++){
             for(x = 0; x < Bitmap.width; x++){
-                png_byte *px = &Bitmap.row_pointers[y][x * 3];
+                png_byte *px = &Bitmap.row_pointers[y][x * 4];
                 Bitmap.Pixels[y][x].red = uint8_t(px[0]);
                 Bitmap.Pixels[y][x].green = uint8_t(px[1]);
                 Bitmap.Pixels[y][x].blue = uint8_t(px[2]);
-                //Bitmap.Pixels[y][x].alpha = uint8_t(px[3]);
+                Bitmap.Pixels[y][x].alpha = uint8_t(px[3]);
             }
         }
 
@@ -119,11 +119,11 @@ int Image::read_png_file(const char *file_name){
     return 0;
 }
 
-int Image::write_png_file(const char *file_name){
-    png_uint_32 y;
+int Image::save_png_file(const char *file_name){
+    png_uint_32 y,x;
     FILE *fp = fopen(file_name, "wb");
     if (!fp){
-        cout << "Can't open file to write. Bye\n";
+        //cout << "Can't open file to write. Bye\n";
         return -1;
     }
 
@@ -132,21 +132,21 @@ int Image::write_png_file(const char *file_name){
 
     if (!Bitmap.png_ptr){
         // Some error handling: png_create_write_struct failed
-        cout <<"error  png_create_write_struct failed\n";
-        exit(1);
+        //cout <<"error  png_create_write_struct failed\n";
+        return -1;
     }
 
     Bitmap.info_ptr = png_create_info_struct(Bitmap.png_ptr);
     if (!Bitmap.info_ptr){
         // Some error handling: png_create_info_struct failed
-        cout <<"Some error handling: png_create_info_struct failed\n";
-        exit(1);
+        //cout <<"Some error handling: png_create_info_struct failed\n";
+        return -1;
     }
 
     if (setjmp(png_jmpbuf(Bitmap.png_ptr))){
         // Some error handling: error during init_io
-        cout <<"error during init_io\n";
-        exit(1);
+        //cout <<"error during init_io\n";
+        return -1;
 
     }
 
@@ -156,8 +156,8 @@ int Image::write_png_file(const char *file_name){
     /* write header */
     if (setjmp(png_jmpbuf(Bitmap.png_ptr))){
         // Some error handling: error during writing header
-        cout <<"error during writing header\n";
-        exit(1);
+        //cout <<"error during writing header\n";
+        return -1;
     }
 
     png_set_IHDR(Bitmap.png_ptr, Bitmap.info_ptr, Bitmap.width, Bitmap.height,
@@ -166,12 +166,21 @@ int Image::write_png_file(const char *file_name){
 
     png_write_info(Bitmap.png_ptr, Bitmap.info_ptr);
 
+    for(y=0;y<Bitmap.height;y++){
+        for (x=0;x<Bitmap.width;x++) {
+            png_byte *px = &Bitmap.row_pointers[y][x * 4];
+            px[0]=png_byte(Bitmap.Pixels[y][x].red);
+            px[1] = png_byte(Bitmap.Pixels[y][x].green);
+            px[2] = png_byte(Bitmap.Pixels[y][x].blue);
+            px[3] = png_byte(Bitmap.Pixels[y][x].alpha);
+        }
+    }
 
     /* write bytes */
     if (setjmp(png_jmpbuf(Bitmap.png_ptr))){
         // Some error handling: error during writing bytes
-        cout <<"error during writing bytes\n";
-        exit(1);
+        //cout <<"error during writing bytes\n";
+        return -1;
     }
 
     png_write_image(Bitmap.png_ptr, Bitmap.row_pointers);
@@ -180,7 +189,7 @@ int Image::write_png_file(const char *file_name){
     /* end write */
     if (setjmp(png_jmpbuf(Bitmap.png_ptr))){
         cout <<"error during end of write\n";
-        exit(1);
+        return -1;
         // Some error handling: error during end of write
     }
 
@@ -188,15 +197,107 @@ int Image::write_png_file(const char *file_name){
 
     /* cleanup heap allocation */
 
-    for (y = 0; y < Bitmap.height; y++)
+    for (y = 0; y < Bitmap.height-1; y++)
         //printf("%d --- ",y);
-        cout<<""; // спросить у ЧАЙКИ
+        //cout<<""; // спросить у ЧАЙКИ
         free(Bitmap.row_pointers[y]);
     free(Bitmap.row_pointers);
 
     fclose(fp);
     return 0;
 }
+
+void Image::negativ_RGB(int x1, int y1, int x2, int y2){
+
+    if (x2 < x1)
+            std::swap(x1, x2);
+    if (y2 < y1)
+        std::swap(y1, y2);
+
+    for (int y=y1;y<y2;y++) {
+        for (int x=x1;x<x2;x++) {
+            Bitmap.Pixels[y][x].red=255-Bitmap.Pixels[y][x].red;
+            Bitmap.Pixels[y][x].green=255-Bitmap.Pixels[y][x].green;
+            Bitmap.Pixels[y][x].blue=255-Bitmap.Pixels[y][x].blue;
+
+
+
+        }
+    }
+}
+
+int Image::print_rectangle(int x1,int y1,int x2, int y2, int thickness, QColor line_color){
+
+
+    if (x2 < x1)
+            std::swap(x1, x2);
+    if (y2 < y1)
+        std::swap(y1, y2);
+    int x,y;
+    if(thickness>(x2-x1)|| thickness>(y2-y1)) return -1;
+
+    for(y=y1;y<y1+thickness;y++){
+        for (x=x1; x<x2;x++) {
+            Bitmap.Pixels[y][x].red = static_cast<uint8_t>( line_color.red());
+            Bitmap.Pixels[y][x].green = static_cast<uint8_t>(  line_color.green());
+            Bitmap.Pixels[y][x].blue = static_cast<uint8_t>( line_color.blue());
+
+        }
+    }
+
+    for (y = y1;y<=y2;y++) {
+            //png_byte *row = image->row_pointers[y];
+            for (x = x2;x > x2-thickness;x--) {
+                Bitmap.Pixels[y][x].red = static_cast<uint8_t>( line_color.red());
+                Bitmap.Pixels[y][x].green = static_cast<uint8_t>(  line_color.green());
+                Bitmap.Pixels[y][x].blue = static_cast<uint8_t>( line_color.blue());
+
+            }
+        }
+
+        for (y = y2;y>y2-thickness;y--) {
+            //png_byte *row = image->row_pointers[y];
+            for(x = x1;x<x2;x++){
+                Bitmap.Pixels[y][x].red = static_cast<uint8_t>( line_color.red());
+                Bitmap.Pixels[y][x].green = static_cast<uint8_t>(  line_color.green());
+                Bitmap.Pixels[y][x].blue = static_cast<uint8_t>( line_color.blue());
+
+            }
+        }
+
+        for ( y=y2;y>y1;y--) {
+            //png_byte *row = image->row_pointers[y];
+            for (x=x1;x<x1+thickness;x++) {
+                //png_byte *ptr = &(row[x * 3]);
+                Bitmap.Pixels[y][x].red = static_cast<uint8_t>( line_color.red());
+                Bitmap.Pixels[y][x].green = static_cast<uint8_t>(  line_color.green());
+                Bitmap.Pixels[y][x].blue = static_cast<uint8_t>( line_color.blue());
+
+            }
+        }
+        return 0;
+
+}
+
+void Image::rec_fill(int x1,int y1,int x2, int y2, int thickness, QColor fill_color){
+
+    if (x2 < x1)
+            std::swap(x1, x2);
+    if (y2 < y1)
+        std::swap(y1, y2);
+
+    for (int y=y1+thickness;y<=y2-thickness;y++) {
+
+                for(int x = x1+thickness;x<=x2-thickness;x++){
+
+                    Bitmap.Pixels[y][x].red = static_cast<uint8_t>( fill_color.red());
+                    Bitmap.Pixels[y][x].green = static_cast<uint8_t>( fill_color.green());
+                    Bitmap.Pixels[y][x].blue = static_cast<uint8_t>( fill_color.blue());
+
+                }
+            }
+}
+
 
 QPixmap Image::get_pixmap()
 {

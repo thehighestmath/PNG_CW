@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/im">
+        <file>icos/add.png</file>
+        <file>icos/applicationexit.png</file>
+        <file>icos/info.png</file>
+        <file>icos/onebit.png</file>
+    </qresource>
+</RCC>

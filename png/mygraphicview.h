@@ -7,6 +7,10 @@
 #include <QGraphicsItemGroup>
 #include <QColor>
 
+#define INVERSE 1
+#define ROTATE 2
+#define RECTANGLE 3
+
 struct Coordinate{
     int x1=0;
     int y1=0;
@@ -27,8 +31,13 @@ public:
     QColor color;
     struct Coordinate click_coordinate;
 
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
     void update(QPixmap pixmap);
 
+signals:
+    void selection();
 
 private:
     QGraphicsScene      *scene;     // Объявляем сцену для отрисовки

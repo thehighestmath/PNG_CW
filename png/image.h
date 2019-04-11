@@ -17,7 +17,7 @@ class Image{
             uint8_t red;
             uint8_t green;
             uint8_t blue;
-            //uint8_t alpha;
+            uint8_t alpha;
         } Pixel_t;
 
     typedef struct Png{
@@ -35,14 +35,12 @@ class Image{
 
 public:
     Bitmap_t Bitmap;
-    int read_png_file(const char *file_name);
-    int write_png_file(const char *file_name);
-    void negativ_RGB(int lh_x,int lh_y, int rl_x, int rl_y);
+    int open_png_file(const char *file_name);
+    int save_png_file(const char *file_name);
+    void negativ_RGB(int x1,int y1, int x2, int y2);
 
-    void print_rectangle(int lh_x,int lh_y,
-                         int rl_x, int rl_y,
-                         bool fill=false,string color="white",
-                         int thickness=5, string f_color ="black");
+    int print_rectangle(int x1,int y1,int x2, int y2, int thickness, QColor line_color);
+    void rec_fill(int x1,int y1,int x2, int y2, int thickness, QColor fill_color);
 
     void division(int N, int M,
                   int thickness, QColor color);
@@ -50,6 +48,7 @@ public:
     void rotate(int lh_x,int lh_y,
                 int rl_x, int rl_y,
                 int angle);
+
 
     QPixmap get_pixmap();
 

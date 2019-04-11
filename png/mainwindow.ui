@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1300</width>
-    <height>664</height>
+    <height>724</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,14 +17,104 @@
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>289</x>
-      <y>9</y>
-      <width>1011</width>
-      <height>611</height>
+      <x>268</x>
+      <y>1</y>
+      <width>1031</width>
+      <height>601</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout"/>
    </widget>
+   <widget class="QPushButton" name="rotate">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>320</y>
+      <width>201</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Поворот</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pattern">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>220</y>
+      <width>201</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Узор</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="split">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>420</y>
+      <width>201</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Разделение изображения</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Inversion">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>120</y>
+      <width>201</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Инверсия</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Rectangle">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>520</y>
+      <width>201</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Прямоугольник</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Options">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>20</y>
+      <width>201</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Настройки</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="open"/>
+   <addaction name="save"/>
+   <addaction name="info"/>
+   <addaction name="exit"/>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -40,36 +130,58 @@
      <string>Файл</string>
     </property>
     <addaction name="open"/>
-    <addaction name="action_2"/>
+    <addaction name="save"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
-     <string>Справка</string>
+     <string>Опции</string>
     </property>
+    <addaction name="info"/>
+    <addaction name="exit"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <action name="action_2">
+  <action name="save">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/im/icos/onebit.png</normaloff>:/im/icos/onebit.png</iconset>
+   </property>
    <property name="text">
     <string>Сохранить файл</string>
    </property>
   </action>
   <action name="open">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/im/icos/add.png</normaloff>:/im/icos/add.png</iconset>
+   </property>
    <property name="text">
     <string>Открыть файл</string>
    </property>
   </action>
+  <action name="info">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/im/icos/info.png</normaloff>:/im/icos/info.png</iconset>
+   </property>
+   <property name="text">
+    <string>Справка</string>
+   </property>
+  </action>
+  <action name="exit">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/im/icos/applicationexit.png</normaloff>:/im/icos/applicationexit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Выход</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

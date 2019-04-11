@@ -28,15 +28,18 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     image.cpp \
-    mygraphicview.cpp
+    mygraphicview.cpp \
+    settings.cpp
 
 HEADERS += \
         mainwindow.h \
     image.h \
-    mygraphicview.h
+    mygraphicview.h \
+    settings.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    settings.ui
 
 LIBS += -lpng
 
@@ -44,3 +47,6 @@ LIBS += -lpng
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    icons.qrc
