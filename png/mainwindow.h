@@ -31,10 +31,14 @@ private slots:
     void on_save_triggered();
     void selection();
     void on_Rectangle_clicked();
-    void on_pattern_2_clicked();
-    void on_options_clicked();
 
     void on_Options_clicked();
+
+    void on_Split_clicked();
+
+    void on_Rotate_clicked();
+
+    void on_refrsh_triggered();
 
 private:
     Ui::MainWindow *ui;
@@ -45,6 +49,7 @@ private:
     QColor color;
     Settings *sett;
     int key;
+    QString filename;
 };
 
 #endif // MAINWINDOW_H

@@ -4,5 +4,6 @@
         <file>icos/applicationexit.png</file>
         <file>icos/info.png</file>
         <file>icos/onebit.png</file>
+        <file>icos/restart.png</file>
     </qresource>
 </RCC>

@@ -8,13 +8,13 @@ int Image::open_png_file(const char *file_name){
     /* open file and test for it being a png */
     FILE *fp = fopen(file_name, "rb");
     if (!fp){
-      cout << "Can't open file to read. Bye\n";
+      //cout << "Can't open file to read. Bye\n";
       return -1;
     }
 
     fread(header, 1, 8, fp);
     if (png_sig_cmp(header, 0, 8)!=0) {
-      cout << "file is not recognized as a PNG. Bye\n";
+      //cout << "file is not recognized as a PNG. Bye\n";
       return -1;
       // Some error handling: file is not recognized as a PNG
     }
@@ -69,6 +69,13 @@ int Image::open_png_file(const char *file_name){
     if (Bitmap.color_type == PNG_COLOR_TYPE_GRAY && Bitmap.bit_depth < 8) png_set_expand_gray_1_2_4_to_8(Bitmap.png_ptr);
     // и добавляем полный альфа-канал
     if (png_get_valid(Bitmap.png_ptr, Bitmap.info_ptr, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(Bitmap.png_ptr);
+
+    // These color_type don't have an alpha channel then fill it with 0xff.
+    if(Bitmap.color_type == PNG_COLOR_TYPE_RGB ||
+       Bitmap.color_type == PNG_COLOR_TYPE_GRAY||
+       Bitmap.color_type == PNG_COLOR_TYPE_PALETTE)
+        png_set_filler(Bitmap.png_ptr,0xFF, PNG_FILLER_AFTER);
+
     //grey to rgb
     if (Bitmap.color_type == PNG_COLOR_TYPE_GRAY || Bitmap.color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
       png_set_gray_to_rgb(Bitmap.png_ptr);
@@ -83,13 +90,15 @@ int Image::open_png_file(const char *file_name){
     Bitmap.bit_depth = png_get_bit_depth(Bitmap.png_ptr, Bitmap.info_ptr);
     Bitmap.number_of_passes = png_set_interlace_handling(Bitmap.png_ptr);
 
-
+    Bitmap.color_type=6;
     printf("color_type = %d\n",Bitmap.color_type);
 
 
+    //cout<< res_x<<"\n" << res_y<<"\n";
+
     /* read file */
     if (setjmp(png_jmpbuf(Bitmap.png_ptr))){
-      cout << "can't read image\n";
+     // cout << "can't read image\n";
       return -1;
     }
 
@@ -161,7 +170,7 @@ int Image::save_png_file(const char *file_name){
     }
 
     png_set_IHDR(Bitmap.png_ptr, Bitmap.info_ptr, Bitmap.width, Bitmap.height,
-                 Bitmap.bit_depth, Bitmap.color_type, PNG_INTERLACE_NONE,
+                 Bitmap.bit_depth, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
     png_write_info(Bitmap.png_ptr, Bitmap.info_ptr);
@@ -182,6 +191,7 @@ int Image::save_png_file(const char *file_name){
         //cout <<"error during writing bytes\n";
         return -1;
     }
+
 
     png_write_image(Bitmap.png_ptr, Bitmap.row_pointers);
 
@@ -298,6 +308,119 @@ void Image::rec_fill(int x1,int y1,int x2, int y2, int thickness, QColor fill_co
             }
 }
 
+void Image::division(int N, int M, int thickness, QColor color){
+    unsigned int space_y=(Bitmap.height -(N-1)*thickness)/N;
+    unsigned int space_x=(Bitmap.width-(M-1)*thickness)/M;
+    int comst=0;
+    for (int y=space_y;y<Bitmap.height-space_y;y=y+space_y) {
+            comst=y;
+            for(y;y<comst+thickness;y++){
+                for(png_uint_32 x=0;x<Bitmap.width;x++){
+                    Bitmap.Pixels[y][x].red = static_cast<uint8_t>( color.red());
+                    Bitmap.Pixels[y][x].green = static_cast<uint8_t>( color.green());
+                    Bitmap.Pixels[y][x].blue = static_cast<uint8_t>( color.blue());
+                }
+                //printf("%d\n",y);
+            }
+        }
+        for(int y=0;y<Bitmap.height;y++){
+            //png_byte *row = image->row_pointers[y];
+            for (int x=space_x;x<Bitmap.width-space_x;x=x+space_x) {
+                comst=x;
+                for (x;x<comst+thickness;x++) {
+                    //png_byte *ptr = &(row[x * 3]);
+                    Bitmap.Pixels[y][x].red = static_cast<uint8_t>( color.red());
+                    Bitmap.Pixels[y][x].green = static_cast<uint8_t>( color.green());
+                    Bitmap.Pixels[y][x].blue = static_cast<uint8_t>( color.blue());
+                }
+            }
+        }
+
+}
+
+int Image::rotate(int x1,int y1,
+            int x2, int y2,
+                   int angle){
+    if (x2 < x1)
+            std::swap(x1, x2);
+    if (y2 < y1)
+        std::swap(y1, y2);
+    Pixel_t **Pixels2 = static_cast<Pixel_t **>(malloc(sizeof(Pixel_t *) * Bitmap.height));
+    for (int i = 0; i < Bitmap.height; i++) {
+        Pixels2[i] = static_cast<Pixel_t*>(calloc(sizeof(Pixel_t), Bitmap.width));
+    }
+
+    for (int y = 0; y < Bitmap.height; y++){
+        for (int x = 0; x < Bitmap.width; x++){
+            Pixels2[y][x] = Bitmap.Pixels[y][x];
+        }
+    }
+
+    if(angle == 90){
+        int mid_x=x2-(x2-x1)/2;
+        int mid_y=y2-(y2-y1)/2;
+        /*if((x2-x1)/2>(y2-y1/2)||(x2-x1)/2>Bitmap.height-(y2-y1/2)){
+            return -1;
+        }
+        if((y2-y1)/2>(x2-x1/2)||(y2-y1)/2>Bitmap.width-(x2-x1/2)){
+            return -1;
+        }*/
+
+        int lenx=x2-x1;
+        int leny=y2-y1;
+        Pixel_t **tmp = static_cast<Pixel_t **>(malloc(sizeof(Pixel_t *)*lenx));
+        for (int i = 0; i < lenx; i++) {
+            tmp[i] = static_cast<Pixel_t*>(calloc(sizeof(Pixel_t), leny));
+        }
+
+        for (int y = 0; y < leny; y++){
+            for (int x = 0; x < lenx; x++){
+
+                //Pixels2[y][x]= Bitmap.Pixels[y][x];
+                tmp[x][leny-1-y]=Pixels2[y+y1][x+x1];
+            }
+        }
+
+        for (int y = y1; y < y2; y++){
+            for (int x = x1; x < x2; x++){
+
+                //Pixels2[y][x]= Bitmap.Pixels[y][x];
+                Pixels2[y][x].red=255;
+                Pixels2[y][x].green=255;
+                Pixels2[y][x].blue=255;
+            }
+        }
+
+        for (int y = 0; y < lenx; y++){
+            for (int x = 0; x < leny; x++){
+
+                //Pixels2[y][x]= Bitmap.Pixels[y][x];
+
+                Pixels2[mid_y-lenx/2+y][mid_x-leny/2+x]=tmp[y][x];
+            }
+        }
+
+    }
+
+    if(angle == 180){
+
+        for (int y = y1; y < y2; y++){
+            for (int x = x1; x < x2; x++){
+                Pixels2[y1+y2-y][x1+x2-x]= Bitmap.Pixels[y][x];
+            }
+        }
+    }
+
+
+    Pixel_t **Pixels1 = Bitmap.Pixels;
+    Bitmap.Pixels = Pixels2;
+
+    for(int y = 0; y < Bitmap.height; y++) {
+        free(Pixels1[y]);
+    }
+    free(Pixels1);
+    return 0;
+}
 
 QPixmap Image::get_pixmap()
 {
@@ -308,7 +431,7 @@ QPixmap Image::get_pixmap()
             pixel.setRed(Bitmap.Pixels[y][x].red);
             pixel.setGreen(Bitmap.Pixels[y][x].green);
             pixel.setBlue(Bitmap.Pixels[y][x].blue);
-            image->setPixel(x, y, pixel.rgb());
+            image->setPixel(x, y, pixel.rgba());
         }
     }
     return QPixmap::fromImage(*image);

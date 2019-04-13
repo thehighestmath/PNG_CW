@@ -10,6 +10,7 @@
 #define INVERSE 1
 #define ROTATE 2
 #define RECTANGLE 3
+#define SPLIT 4
 
 struct Coordinate{
     int x1=0;

@@ -45,12 +45,13 @@ public:
     void division(int N, int M,
                   int thickness, QColor color);
 
-    void rotate(int lh_x,int lh_y,
-                int rl_x, int rl_y,
+    int rotate(int x1,int y1,
+                int x2, int y2,
                 int angle);
 
 
     QPixmap get_pixmap();
+
 
 };
 #endif // IMAGE_H

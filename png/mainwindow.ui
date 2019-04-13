@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1300</width>
-    <height>724</height>
+    <width>1299</width>
+    <height>694</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
     </property>
     <layout class="QGridLayout" name="gridLayout"/>
    </widget>
-   <widget class="QPushButton" name="rotate">
+   <widget class="QPushButton" name="Rotate">
     <property name="geometry">
      <rect>
       <x>30</x>
@@ -49,19 +49,6 @@
     </property>
     <property name="text">
      <string>Узор</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="split">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>420</y>
-      <width>201</width>
-      <height>81</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Разделение изображения</string>
     </property>
    </widget>
    <widget class="QPushButton" name="Inversion">
@@ -103,6 +90,19 @@
      <string>Настройки</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="Split">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>420</y>
+      <width>201</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Разделение экрана</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -113,6 +113,7 @@
    </attribute>
    <addaction name="open"/>
    <addaction name="save"/>
+   <addaction name="refrsh"/>
    <addaction name="info"/>
    <addaction name="exit"/>
   </widget>
@@ -121,7 +122,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1300</width>
+     <width>1299</width>
      <height>22</height>
     </rect>
    </property>
@@ -131,6 +132,7 @@
     </property>
     <addaction name="open"/>
     <addaction name="save"/>
+    <addaction name="refrsh"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -176,6 +178,15 @@
    </property>
    <property name="text">
     <string>Выход</string>
+   </property>
+  </action>
+  <action name="refrsh">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/im/icos/restart.png</normaloff>:/im/icos/restart.png</iconset>
+   </property>
+   <property name="text">
+    <string>Очистить изображение</string>
    </property>
   </action>
  </widget>

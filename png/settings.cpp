@@ -49,3 +49,18 @@ void Settings::on_rec_is_fill_stateChanged(int arg1)
     else
         fill = false;
 }
+
+void Settings::on_gorizontal_count_valueChanged(int arg1)
+{
+    gorizontal_count = ui->gorizontal_count->value();
+}
+
+void Settings::on_vertical_count_valueChanged(int arg1)
+{
+    vertical_count = ui->vertical_count->value();
+}
+
+void Settings::on_line_split_size_valueChanged(int arg1)
+{
+    line_split_size = ui->line_split_size->value();
+}
