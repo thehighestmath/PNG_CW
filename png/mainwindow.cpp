@@ -144,9 +144,17 @@ void MainWindow::selection(){
             QMessageBox::critical(this, "Ошибка", "Неккоректно задана область");
             return;
         }
-        img->rotate(picture->click_coordinate.x1, picture->click_coordinate.y1, picture->click_coordinate.x2, picture->click_coordinate.y2,90);
+        img->rotate(picture->click_coordinate.x1, picture->click_coordinate.y1, picture->click_coordinate.x2, picture->click_coordinate.y2,sett->angle);
         picture->update(img->get_pixmap());
         ui->gridLayout->addWidget(picture);
+        break;
+    case PATTERN:
+
+        img->pattern(66,1,sett->split_color);
+        //QMessageBox::warning(this, "axtung", "ura");
+        picture->update(img->get_pixmap());
+        ui->gridLayout->addWidget(picture);
+        break;
     }
 }
 
@@ -157,6 +165,15 @@ void MainWindow::on_Options_clicked()
     sett->exec();
 }
 
+void MainWindow::on_pattern_clicked()
+{
+    if (img->Bitmap.width == 0 || img->Bitmap.height == 0){
+        QMessageBox::critical(this, "Ошибка", "Для использования инструментов загрузите изображение");
+        return;
+    }
+    button_pressed = PATTERN;
+    emit selection();
+}
 
 void MainWindow::on_Split_clicked()
 {
@@ -167,6 +184,7 @@ void MainWindow::on_Split_clicked()
         return;
     }
     button_pressed = SPLIT;
+    emit selection();
     //picture->button_pressed = SPLIT;
 }
 
@@ -179,5 +197,6 @@ void MainWindow::on_Rotate_clicked()
     button_pressed = ROTATE;
     picture->button_pressed = ROTATE;
 }
+
 
 

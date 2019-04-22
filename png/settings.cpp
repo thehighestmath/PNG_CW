@@ -6,6 +6,12 @@ Settings::Settings(QWidget *parent) :
     ui(new Ui::Settings)
 {
     ui->setupUi(this);
+    ui->right_rot->setChecked(1);
+    ui->rec_line_size->setValue(1);
+    ui->vertical_count->setValue(1);
+    ui->gorizontal_count->setValue(1);
+    ui->line_split_size->setValue(1);
+
 }
 
 Settings::~Settings()
@@ -63,4 +69,37 @@ void Settings::on_vertical_count_valueChanged(int arg1)
 void Settings::on_line_split_size_valueChanged(int arg1)
 {
     line_split_size = ui->line_split_size->value();
+}
+
+void Settings::on_right_rot_clicked()
+{
+    if(ui->right_rot->isChecked()){
+        angle=90;
+    }
+}
+
+void Settings::on_half_rot_clicked()
+{
+    if(ui->half_rot->isChecked()){
+        angle=180;
+    }
+}
+
+
+
+void Settings::on_left_rot_clicked()
+{
+    if(ui->left_rot->isChecked())
+        angle=270;
+}
+
+void Settings::on_display_clicked()
+{
+    if(ui->display->isChecked())
+        angle=360;
+}
+
+void Settings::on_exit_clicked()
+{
+    this->close();
 }

@@ -11,6 +11,7 @@
 #define ROTATE 2
 #define RECTANGLE 3
 #define SPLIT 4
+#define PATTERN 5
 
 struct Coordinate{
     int x1=0;

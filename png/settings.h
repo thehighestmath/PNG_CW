@@ -22,6 +22,7 @@ public:
 
     int gorizontal_count=1;
     int vertical_count =1;
+    int angle =90;
 
 private slots:
     void on_rec_line_color_clicked();
@@ -39,6 +40,16 @@ private slots:
     void on_vertical_count_valueChanged(int arg1);
 
     void on_line_split_size_valueChanged(int arg1);
+
+    void on_right_rot_clicked();
+
+    void on_half_rot_clicked();
+
+    void on_left_rot_clicked();
+
+    void on_display_clicked();
+
+    void on_exit_clicked();
 
 private:
     Ui::Settings *ui;

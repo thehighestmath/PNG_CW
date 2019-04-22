@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 #include <cstring>
+#include <cmath>
 
 #include <QPixmap>
 #include <map>
@@ -48,7 +49,8 @@ public:
     int rotate(int x1,int y1,
                 int x2, int y2,
                 int angle);
-
+    void pattern(int type, int thickness, QColor color);
+    void KOH(int k, int max_k, int x1, int y1, int x2, int y2, int i);
 
     QPixmap get_pixmap();
 

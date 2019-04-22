@@ -44,15 +44,14 @@ void MyGraphicView::mouseMoveEvent(QMouseEvent *event)
         this->deleteItemsFromGroup(group);
         group = new QGraphicsItemGroup();
 
-        color.setRed(0);
-        color.setGreen(0);
-        color.setBlue(0);
+        color.setRed(255);
+        color.setGreen(255);
+        color.setBlue(255);
 
         if (x2 < 0)
             x2 = 0;
         if (y2 < 0)
             y2 = 0;
-
         if (x2 < x1)
             std::swap(x1, x2);
 

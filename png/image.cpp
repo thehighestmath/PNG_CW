@@ -175,6 +175,12 @@ int Image::save_png_file(const char *file_name){
 
     png_write_info(Bitmap.png_ptr, Bitmap.info_ptr);
 
+    if (setjmp(png_jmpbuf(Bitmap.png_ptr))){
+        // Some error handling: error during writing bytes
+        //cout <<"error during writing bytes\n";
+        return -1;
+    }
+
     for(y=0;y<Bitmap.height;y++){
         for (x=0;x<Bitmap.width;x++) {
             png_byte *px = &Bitmap.row_pointers[y][x * 4];
@@ -186,11 +192,6 @@ int Image::save_png_file(const char *file_name){
     }
 
     /* write bytes */
-    if (setjmp(png_jmpbuf(Bitmap.png_ptr))){
-        // Some error handling: error during writing bytes
-        //cout <<"error during writing bytes\n";
-        return -1;
-    }
 
 
     png_write_image(Bitmap.png_ptr, Bitmap.row_pointers);
@@ -395,10 +396,68 @@ int Image::rotate(int x1,int y1,
             for (int x = 0; x < leny; x++){
 
                 //Pixels2[y][x]= Bitmap.Pixels[y][x];
-
-                Pixels2[mid_y-lenx/2+y][mid_x-leny/2+x]=tmp[y][x];
+                if(mid_y-lenx/2+y>=0 && mid_y-lenx/2+y<Bitmap.height
+                        &&mid_x-leny/2+x>=0 && mid_x-leny/2+x<Bitmap.width){
+                    Pixels2[mid_y-lenx/2+y][mid_x-leny/2+x]=tmp[y][x];
+                }
             }
         }
+        for (int i=0;i<lenx;i++) {
+            free(tmp[i]);
+        }
+        free(tmp);
+
+    }
+
+    if(angle == 270){
+        int mid_x=x2-(x2-x1)/2;
+        int mid_y=y2-(y2-y1)/2;
+        /*if((x2-x1)/2>(y2-y1/2)||(x2-x1)/2>Bitmap.height-(y2-y1/2)){
+            return -1;
+        }
+        if((y2-y1)/2>(x2-x1/2)||(y2-y1)/2>Bitmap.width-(x2-x1/2)){
+            return -1;
+        }*/
+
+        int lenx=x2-x1;
+        int leny=y2-y1;
+        Pixel_t **tmp = static_cast<Pixel_t **>(malloc(sizeof(Pixel_t *)*lenx));
+        for (int i = 0; i < lenx; i++) {
+            tmp[i] = static_cast<Pixel_t*>(calloc(sizeof(Pixel_t), leny));
+        }
+
+        for (int y = 0; y < leny; y++){
+            for (int x = 0; x < lenx; x++){
+
+                //Pixels2[y][x]= Bitmap.Pixels[y][x];
+                tmp[x][y]=Pixels2[y+y1][x+x1];
+            }
+        }
+
+        for (int y = y1; y < y2; y++){
+            for (int x = x1; x < x2; x++){
+
+                //Pixels2[y][x]= Bitmap.Pixels[y][x];
+                Pixels2[y][x].red=255;
+                Pixels2[y][x].green=255;
+                Pixels2[y][x].blue=255;
+            }
+        }
+
+        for (int y = 0; y < lenx; y++){
+            for (int x = 0; x < leny; x++){
+
+                //Pixels2[y][x]= Bitmap.Pixels[y][x];
+                if(mid_y-lenx/2+y>=0 && mid_y-lenx/2+y<Bitmap.height
+                        &&mid_x-leny/2+x>=0 && mid_x-leny/2+x<Bitmap.width){
+                    Pixels2[mid_y-lenx/2+y][mid_x-leny/2+x]=tmp[y][x];
+                }
+            }
+        }
+        for (int i=0;i<lenx;i++) {
+            free(tmp[i]);
+        }
+        free(tmp);
 
     }
 
@@ -407,6 +466,15 @@ int Image::rotate(int x1,int y1,
         for (int y = y1; y < y2; y++){
             for (int x = x1; x < x2; x++){
                 Pixels2[y1+y2-y][x1+x2-x]= Bitmap.Pixels[y][x];
+            }
+        }
+    }
+
+    if(angle == 360){
+
+        for (int y = y1; y < y2; y++){
+            for (int x = x1; x < x2; x++){
+                Pixels2[y][x1+x2-x]= Bitmap.Pixels[y][x];
             }
         }
     }
@@ -422,6 +490,170 @@ int Image::rotate(int x1,int y1,
     return 0;
 }
 
+void Image::pattern(int type, int thickness, QColor color){
+    png_uint_32 x,y;
+    if(type==2){
+        // left
+        for (y=0;y<Bitmap.height;y++) {
+            for (x=0;x<thickness;x++) {
+                Bitmap.Pixels[y][x].red=color.red();
+                Bitmap.Pixels[y][x].green=color.green();
+                Bitmap.Pixels[y][x].blue=color.blue();
+            }
+        }
+        // right
+        for (y=Bitmap.height-1;y>0;y--) {
+            for (x=Bitmap.width-1;x>Bitmap.width-1-thickness;x--) {
+                Bitmap.Pixels[y][x].red=color.red();
+                Bitmap.Pixels[y][x].green=color.green();
+                Bitmap.Pixels[y][x].blue=color.blue();
+            }
+        }
+        // top
+        for(x=0;x<Bitmap.width;x++){
+            for (y=0;y<thickness;y++) {
+                Bitmap.Pixels[y][x].red=color.red();
+                Bitmap.Pixels[y][x].green=color.green();
+                Bitmap.Pixels[y][x].blue=color.blue();
+            }
+        }
+        //bottom
+        for(x=0;x<Bitmap.width;x++){
+            for (y=Bitmap.height-1;y>Bitmap.height-1-thickness;y--) {
+                Bitmap.Pixels[y][x].red=color.red();
+                Bitmap.Pixels[y][x].green=color.green();
+                Bitmap.Pixels[y][x].blue=color.blue();
+            }
+        }
+    }
+    if (type==1){
+        for (y=0;y<Bitmap.height;y++) {
+            for (x=0;x<Bitmap.width;x++) {
+                Bitmap.Pixels[y][x].red=color.red();
+                Bitmap.Pixels[y][x].green=color.green();
+                Bitmap.Pixels[y][x].blue=color.blue();
+            }
+        }
+    }
+    if(type=66){
+        Image::KOH(0,5,200,300, 600, 300,1);
+
+
+    }
+
+}
+void Image::KOH(int k, int max_k, int x1, int y1, int x2, int y2, int l){
+    int y,x,i,j;
+    double tmp;
+    // точка на 1/3 длины
+    double x3_d = x1 + (x2 - x1)/3;
+    double y3_d = y1 + (y2 - y1)/3;
+
+    // точка на 2/3 длины
+    double y4_d = y1 + 2 * (y2 - y1)/3;
+    double x4_d = x1 + 2 * (x2 - x1)/3;
+    // длина основания
+    double L = sqrt(pow((x1 - x2),2) + pow((y1 - y2),2));
+    // высота нового равностороннего треугольника
+    double h = L /(2 * sqrt(3));
+    // углы между линией и осью ОХ
+    double sina = (y2 - y1)/L;
+    double cosa = (x2 - x1)/L;
+    // вершина галочки
+    double x5_d = (x2 + x1)/2 + h * l * sina;
+    double y5_d = (y2 + y1)/2 - h * l * cosa ;
+
+    // drow
+    //swap!
+    int x3,x4,x5,y3,y4,y5;
+    x3=x3_d;
+    x4=x4_d;
+    x5=x5_d;
+    y3=y3_d;
+    y4=y4_d;
+    y5=y5_d;
+
+    Bitmap.Pixels[y1][x1].red=0;
+    Bitmap.Pixels[y1][x1].green=0;
+    Bitmap.Pixels[y1][x1].blue=0;
+
+    Bitmap.Pixels[y2][x2].red=0;
+    Bitmap.Pixels[y2][x2].green=0;
+    Bitmap.Pixels[y2][x2].blue=0;
+
+    Bitmap.Pixels[y3][x3].red=0;
+    Bitmap.Pixels[y3][x3].green=0;
+    Bitmap.Pixels[y3][x3].blue=0;
+
+    Bitmap.Pixels[y4][x4].red=0;
+    Bitmap.Pixels[y4][x4].green=0;
+    Bitmap.Pixels[y4][x4].blue=0;
+
+    Bitmap.Pixels[y5][x5].red=0;
+    Bitmap.Pixels[y5][x5].green=0;
+    Bitmap.Pixels[y5][x5].blue=0;
+/*
+    for (y=(y1<y3?y1:y3);y<(y1>y3?y1:y3)+1;y++) {
+        for (x=(x1<x3?x1:x3);x<(x1>x3?x1:x3);x++) {
+
+            Bitmap.Pixels[y][x].red=0;
+            Bitmap.Pixels[y][x].green=0;
+            Bitmap.Pixels[y][x].blue=0;
+
+        }
+    }
+*/
+    /*
+    for (y=(y5<y3?y5:y3),j=0;y<(y5>y3?y5:y3);y++,j++) {
+        for (x=(x5<x3?x5:x3),i=0;x<(x5>x3?x5:x3);x++,i++) {
+            if(i==j){
+                Bitmap.Pixels[y][x].red=0;
+                Bitmap.Pixels[y][x].green=0;
+                Bitmap.Pixels[y][x].blue=0;
+            }
+        }
+    }
+
+
+    for (y=(y5<y4?y5:y4),j=0;y<(y5>y4?y5:y4);y++,j++) {
+        for (x=(x5<x4?x5:x4),i=0;x<(x5>x4?x5:x4);x++,i++) {
+            if(i==j){
+                Bitmap.Pixels[y][x].red=0;
+                Bitmap.Pixels[y][x].green=0;
+                Bitmap.Pixels[y][x].blue=0;
+            }
+        }
+    }
+
+*/
+    double tga=1.7320508;
+    /*for(x=x3;x<x5;x++){
+        tmp=y1-(x-x3)*tga;
+        y=tmp;
+        Bitmap.Pixels[y][x].red=0;
+        Bitmap.Pixels[y][x].green=0;
+        Bitmap.Pixels[y][x].blue=0;
+    }*/
+/*
+    for (y=(y2<y4?y2:y4);y<(y2>y4?y2:y4)+1;y++) {
+        for (x=(x4<x2?x4:x2);x<(x4>x2?x4:x2);x++) {
+
+            Bitmap.Pixels[y][x].red=0;
+            Bitmap.Pixels[y][x].green=0;
+            Bitmap.Pixels[y][x].blue=0;
+
+        }
+    }
+*/
+    k++;// текущий порядок кривй Коха
+    if(k<max_k){
+        KOH(k,max_k,x1,y1,x3,y3,l);
+        KOH(k,max_k,x3,y3,x5,y5,l);
+        KOH(k,max_k,x5,y5,x4,y4,l);
+        KOH(k,max_k,x4,y4,x2,y2,l);
+    }
+
+}
 QPixmap Image::get_pixmap()
 {
     QImage *image = new QImage(Bitmap.width, Bitmap.height, QImage::Format_RGB16);

@@ -40,6 +40,8 @@ private slots:
 
     void on_refrsh_triggered();
 
+    void on_pattern_clicked();
+
 private:
     Ui::MainWindow *ui;
     Image *img;
