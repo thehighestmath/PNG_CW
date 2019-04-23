@@ -23,7 +23,8 @@ public:
     int gorizontal_count=1;
     int vertical_count =1;
     int angle =90;
-
+    QColor color_fill_pattern;
+    QColor color_pattern;
 private slots:
     void on_rec_line_color_clicked();
 
@@ -50,6 +51,10 @@ private slots:
     void on_display_clicked();
 
     void on_exit_clicked();
+
+    void on_color_fill_pattern_clicked();
+
+    void on_color_pattern_clicked();
 
 private:
     Ui::Settings *ui;

@@ -103,3 +103,17 @@ void Settings::on_exit_clicked()
 {
     this->close();
 }
+
+void Settings::on_color_fill_pattern_clicked()
+{
+    color_fill_pattern=QColorDialog::getColor();
+    //picture->color = color;
+    if (!rec_line_color.isValid()) return;
+}
+
+void Settings::on_color_pattern_clicked()
+{
+    color_pattern=QColorDialog::getColor();
+    //picture->color = color;
+    if (!rec_line_color.isValid()) return;
+}

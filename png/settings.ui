@@ -112,6 +112,33 @@
      <property name="title">
       <string>Узоры</string>
      </property>
+     <widget class="QPushButton" name="color_pattern">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>190</y>
+        <width>161</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Выберите цвет узора</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="color_fill_pattern">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>260</y>
+        <width>161</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Выберите цвет 
+ заливки рамки</string>
+      </property>
+     </widget>
     </widget>
    </item>
    <item row="0" column="2">

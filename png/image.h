@@ -49,9 +49,9 @@ public:
     int rotate(int x1,int y1,
                 int x2, int y2,
                 int angle);
-    void pattern(int type, int thickness, QColor color);
-    void KOH(int k, int max_k, int x1, int y1, int x2, int y2, int i);
-
+    void pattern(int type, int thickness, QColor color, QColor fill_color);
+    void KOH(int k, int max_k, int x1, int y1, int x2, int y2, int l, QColor color, QColor color_fill);
+    void line(int x0,int x1,int y0,int y1, QColor color);
     QPixmap get_pixmap();
 
 

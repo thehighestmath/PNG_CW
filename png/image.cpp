@@ -1,4 +1,5 @@
 #include "image.h"
+#include "settings.h"
 
 int Image::open_png_file(const char *file_name){
     png_uint_32 x,y;
@@ -490,7 +491,7 @@ int Image::rotate(int x1,int y1,
     return 0;
 }
 
-void Image::pattern(int type, int thickness, QColor color){
+void Image::pattern(int type, int thickness, QColor color, QColor color_fill){
     png_uint_32 x,y;
     if(type==2){
         // left
@@ -536,13 +537,69 @@ void Image::pattern(int type, int thickness, QColor color){
         }
     }
     if(type=66){
-        Image::KOH(0,5,200,300, 600, 300,1);
+        int n=Bitmap.width/100;
+        int m=Bitmap.height/100;
+        for (int i=0;i<n;i++) {
+            int tmp=Bitmap.width/n;
+            Image::KOH(0,4, tmp*i, Bitmap.height-1, tmp*(i+1), Bitmap.height-1,1,color, color_fill);
+            Image::KOH(0,4, tmp*i, 0, tmp*(i+1), 0,-1,color, color_fill);
+            //Image::line(tmp*i, Bitmap.height-1, tmp*(i+1), Bitmap.height-1,color);
+            // запустить с 1 чтобы убрать нижние полосы
+            Image::KOH(0,1, tmp*i, 0, tmp*(i+1), 0,-1,color_fill, color_fill);
+            Image::KOH(0,1, tmp*i, Bitmap.height-1, tmp*(i+1), Bitmap.height-1,1,color_fill, color_fill);
+        }
+        for(int i=0;i<m;i++){
+            int tmp=Bitmap.height/m;
+            Image::KOH(0,4, 0,tmp*i,0,tmp*(i+1),1,color,color_fill);
+            Image::KOH(0,4, Bitmap.width-1,tmp*i,Bitmap.width,tmp*(i+1),-1,color,color_fill);
+
+            Image::KOH(0,1, 0,tmp*i,0,tmp*(i+1),1,color_fill,color_fill);
+            Image::KOH(0,1, Bitmap.width-1,tmp*i,Bitmap.width,tmp*(i+1),-1,color_fill,color_fill);
+        }
+        //Image::KOH(0,5, 0, Bitmap.height-1, Bitmap.width-1, Bitmap.height-1,1,color, color_fill);
+        //Image::KOH(0,5, Bitmap.width-1,0,Bitmap.width-1, Bitmap.height-1, -1,color, color_fill);
+        //Image::KOH(0,5, 0, 0, 0, Bitmap.height-1, 1,color, color_fill);
+
+
 
 
     }
 
 }
-void Image::KOH(int k, int max_k, int x1, int y1, int x2, int y2, int l){
+
+void Image::line(int x1, int y1, int x2, int y2, QColor color){
+    const int deltaX = abs(x2 - x1);
+        const int deltaY = abs(y2 - y1);
+        const int signX = x1 < x2 ? 1 : -1;
+        const int signY = y1 < y2 ? 1 : -1;
+        //
+        int error = deltaX - deltaY;
+        //
+        Bitmap.Pixels[y2][x2].red=color.red();
+        Bitmap.Pixels[y2][x2].green=color.green();
+        Bitmap.Pixels[y2][x2].blue=color.blue();
+        while(x1 != x2 || y1 != y2)
+       {
+            Bitmap.Pixels[y1][x1].red=color.red();
+            Bitmap.Pixels[y1][x1].green=color.green();
+            Bitmap.Pixels[y1][x1].blue=color.blue();
+            const int error2 = error * 2;
+            //
+            if(error2 > -deltaY)
+            {
+                error -= deltaY;
+                x1 += signX;
+            }
+            if(error2 < deltaX)
+            {
+                error += deltaX;
+                y1 += signY;
+            }
+        }
+
+}
+
+void Image::KOH(int k, int max_k, int x1, int y1, int x2, int y2, int l, QColor color, QColor color_fill){
     int y,x,i,j;
     double tmp;
     // точка на 1/3 длины
@@ -573,6 +630,8 @@ void Image::KOH(int k, int max_k, int x1, int y1, int x2, int y2, int l){
     y4=y4_d;
     y5=y5_d;
 
+    Image::line(x3,y3,x4,y4, color_fill);
+/*
     Bitmap.Pixels[y1][x1].red=0;
     Bitmap.Pixels[y1][x1].green=0;
     Bitmap.Pixels[y1][x1].blue=0;
@@ -592,68 +651,22 @@ void Image::KOH(int k, int max_k, int x1, int y1, int x2, int y2, int l){
     Bitmap.Pixels[y5][x5].red=0;
     Bitmap.Pixels[y5][x5].green=0;
     Bitmap.Pixels[y5][x5].blue=0;
-/*
-    for (y=(y1<y3?y1:y3);y<(y1>y3?y1:y3)+1;y++) {
-        for (x=(x1<x3?x1:x3);x<(x1>x3?x1:x3);x++) {
-
-            Bitmap.Pixels[y][x].red=0;
-            Bitmap.Pixels[y][x].green=0;
-            Bitmap.Pixels[y][x].blue=0;
-
-        }
-    }
 */
-    /*
-    for (y=(y5<y3?y5:y3),j=0;y<(y5>y3?y5:y3);y++,j++) {
-        for (x=(x5<x3?x5:x3),i=0;x<(x5>x3?x5:x3);x++,i++) {
-            if(i==j){
-                Bitmap.Pixels[y][x].red=0;
-                Bitmap.Pixels[y][x].green=0;
-                Bitmap.Pixels[y][x].blue=0;
-            }
-        }
-    }
 
+    // рисуем "галочку"
+    Image::line(x3,y3,x5,y5,color);
+    Image::line(x5,y5,x4,y4,color);
 
-    for (y=(y5<y4?y5:y4),j=0;y<(y5>y4?y5:y4);y++,j++) {
-        for (x=(x5<x4?x5:x4),i=0;x<(x5>x4?x5:x4);x++,i++) {
-            if(i==j){
-                Bitmap.Pixels[y][x].red=0;
-                Bitmap.Pixels[y][x].green=0;
-                Bitmap.Pixels[y][x].blue=0;
-            }
-        }
-    }
-
-*/
-    double tga=1.7320508;
-    /*for(x=x3;x<x5;x++){
-        tmp=y1-(x-x3)*tga;
-        y=tmp;
-        Bitmap.Pixels[y][x].red=0;
-        Bitmap.Pixels[y][x].green=0;
-        Bitmap.Pixels[y][x].blue=0;
-    }*/
-/*
-    for (y=(y2<y4?y2:y4);y<(y2>y4?y2:y4)+1;y++) {
-        for (x=(x4<x2?x4:x2);x<(x4>x2?x4:x2);x++) {
-
-            Bitmap.Pixels[y][x].red=0;
-            Bitmap.Pixels[y][x].green=0;
-            Bitmap.Pixels[y][x].blue=0;
-
-        }
-    }
-*/
     k++;// текущий порядок кривй Коха
     if(k<max_k){
-        KOH(k,max_k,x1,y1,x3,y3,l);
-        KOH(k,max_k,x3,y3,x5,y5,l);
-        KOH(k,max_k,x5,y5,x4,y4,l);
-        KOH(k,max_k,x4,y4,x2,y2,l);
+        KOH(k,max_k,x1,y1,x3,y3,l,color, color_fill);
+        KOH(k,max_k,x3,y3,x5,y5,l,color, color_fill);
+        KOH(k,max_k,x5,y5,x4,y4,l,color, color_fill);
+        KOH(k,max_k,x4,y4,x2,y2,l,color, color_fill);
     }
 
 }
+
 QPixmap Image::get_pixmap()
 {
     QImage *image = new QImage(Bitmap.width, Bitmap.height, QImage::Format_RGB16);

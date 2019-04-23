@@ -150,7 +150,7 @@ void MainWindow::selection(){
         break;
     case PATTERN:
 
-        img->pattern(66,1,sett->split_color);
+        img->pattern(66,1,sett->color_pattern,sett->color_fill_pattern);
         //QMessageBox::warning(this, "axtung", "ura");
         picture->update(img->get_pixmap());
         ui->gridLayout->addWidget(picture);
